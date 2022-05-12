@@ -85,29 +85,34 @@ export class Healthcheck {
   }
 
   async alarm() {
-    console.log({
-      message: 'alarm trigger',
-      id: this.state.id.toString(),
-      timestamp: Date.now(),
-    })
-    const result = await this.checkHealth()
-    this.history.push(result)
-    if (this.history.length > MAX_HISTORY) {
-      this.history.shift()
-    }
-    this.state.storage?.put('history', this.history)
-
     try {
-      const id = this.env.ACCOUNT.idFromString(this.config.accountId)
-      const obj = this.env.ACCOUNT.get(id)
+      console.log({
+        message: 'alarm trigger',
+        id: this.state.id.toString(),
+        timestamp: Date.now(),
+      })
+      const result = await this.checkHealth()
+      this.history.push(result)
+      if (this.history.length > MAX_HISTORY) {
+        this.history.shift()
+      }
+      this.state.storage?.put('history', this.history)
 
-      await obj.fetch('https://edge-healthchecks.com/_update', {method: 'POST', body: JSON.stringify(result)})
+      try {
+        const id = this.env.ACCOUNT.idFromString(this.config.accountId)
+        const obj = this.env.ACCOUNT.get(id)
 
+        await obj.fetch('https://edge-healthchecks.com/_update', {method: 'POST', body: JSON.stringify(result)})
+
+      } catch (e) {
+        console.log(e)
+      }
+
+      this.state.storage?.setAlarm(Date.now() + this.config.period * 1000)
     } catch (e) {
       console.log(e)
     }
 
-    this.state.storage?.setAlarm(Date.now() + this.config.period * 1000)
   }
 
   async checkHealth(): Promise<HealthcheckResult> {
