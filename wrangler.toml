@@ -1,0 +1,26 @@
+name = "edge-healthchecks"
+# type = "javascript" is required to use the `[build]` section
+account_id = ""
+workers_dev = true
+#route = ""
+compatibility_date = "2022-05-06"
+compatibility_flags = ["durable_object_alarms"]
+main = "./dist/index.mjs"
+
+[build]
+command = "npm install && npm test && npm run build"
+
+[[kv_namespaces]]
+binding = "ACCOUNTS"
+id = "470e9593c4c54ebb824c3c9a6bf4fd5f"
+preview_id = "180f486b00eb490d9db2be66d4041a6c"
+
+[durable_objects]
+bindings = [
+    {name = "ACCOUNT", class_name = "Account"},
+    {name = "HEALTHCHECK", class_name = "Healthcheck"}
+]
+
+[[migrations]]
+tag = "v1" # Should be unique for each entry
+new_classes = ["Account", "Healthcheck"]
